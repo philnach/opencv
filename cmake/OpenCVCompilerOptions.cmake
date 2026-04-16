@@ -567,4 +567,24 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio" AND CMAKE_CXX_COMPILER_ID MATCHES "MS
       endif()
     endif()
   endif()
+
+  # When /MP parallel compilation is active, MSVC's /Zi flag serialises all
+  # compiler processes on a single shared .pdb file, cancelling most of the
+  # parallelism gain.  Replace /Zi with /Z7, which embeds debug information
+  # directly in each .obj file so there is no shared-PDB contention.
+  # The linker still produces a final .pdb from the embedded info.
+  # Skip if the user has already set a debug-info flag or opted out.
+  # References:
+  #   https://docs.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format
+  #   https://devblogs.microsoft.com/cppblog/improved-parallelism-in-msbuild/
+  if(NOT OPENCV_SKIP_MSVC_Z7_OVERRIDE)
+    foreach(_lang C CXX)
+      foreach(_config "" "_DEBUG" "_RELWITHDEBINFO")
+        set(_flags_var "CMAKE_${_lang}_FLAGS${_config}")
+        if("${${_flags_var}}" MATCHES "(^| )/Z[iI]")
+          string(REGEX REPLACE "(^| )/Z[iI]" "\\1/Z7" ${_flags_var} "${${_flags_var}}")
+        endif()
+      endforeach()
+    endforeach()
+  endif()
 endif()
