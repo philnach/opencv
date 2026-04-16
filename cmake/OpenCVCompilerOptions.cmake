@@ -41,8 +41,11 @@ if(ENABLE_CCACHE AND NOT OPENCV_COMPILER_IS_CCACHE)
   endif()
 endif()
 
-if((CV_CLANG AND NOT CMAKE_GENERATOR MATCHES "Xcode")  # PCH has no support for Clang
-    OR OPENCV_COMPILER_IS_CCACHE
+if(OPENCV_COMPILER_IS_CCACHE
+    OR (CV_CLANG AND NOT CMAKE_GENERATOR MATCHES "Xcode"
+        AND (CMAKE_VERSION VERSION_LESS "3.16" OR OPENCV_SKIP_CMAKE_BUILTIN_PCH))
+        # Old custom PCH mechanism has no support for Clang; CMake 3.16+
+        # target_precompile_headers() handles Clang correctly.
 )
   set(ENABLE_PRECOMPILED_HEADERS OFF CACHE BOOL "" FORCE)
 endif()

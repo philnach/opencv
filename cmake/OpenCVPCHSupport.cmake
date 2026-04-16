@@ -31,6 +31,13 @@ ELSE()
     SET(PCHSupport_FOUND FALSE)
 ENDIF()
 
+# CMake 3.16+ provides target_precompile_headers() which works with GCC, Clang,
+# and MSVC regardless of the build generator (including Ninja). Use it as a
+# fallback when the compiler/generator combination was not detected above.
+if(NOT PCHSupport_FOUND AND NOT CMAKE_VERSION VERSION_LESS "3.16")
+    SET(PCHSupport_FOUND TRUE)
+endif()
+
 MACRO(_PCH_GET_COMPILE_FLAGS _out_compile_flags)
 
     STRING(TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _flags_var_name)
