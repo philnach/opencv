@@ -172,6 +172,18 @@ endif()
 
 ocv_create_module(${extra_libs})
 
+if(PCHSupport_FOUND AND ENABLE_PRECOMPILED_HEADERS
+    AND NOT CMAKE_VERSION VERSION_LESS "3.16"
+    AND NOT OPENCV_SKIP_CMAKE_BUILTIN_PCH)
+  target_precompile_headers(${the_module} PRIVATE
+      <opencv2/core.hpp>
+      <opencv2/core/mat.hpp>
+      <vector>
+      <algorithm>
+      <cmath>
+  )
+endif()
+
 ocv_target_link_libraries(${the_module} PRIVATE
     "${ZLIB_LIBRARIES}" "${OPENCL_LIBRARIES}" "${VA_LIBRARIES}"
     "${OPENGL_LIBRARIES}"
